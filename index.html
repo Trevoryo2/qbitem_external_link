@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; }
+        body {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.85);
+            font-family: Arial, sans-serif;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+        }
+        body.visible {
+            display: flex;
+        }
+        h2 { font-size: 24px; margin-bottom: 10px; }
+        p { font-size: 14px; color: #aaa; margin-bottom: 30px; }
+        .buttons { display: flex; gap: 12px; }
+        button {
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #openBtn {
+            background: #3498db;
+            color: white;
+        }
+        #openBtn:hover { background: #2980b9; }
+        #closeBtn {
+            background: #e74c3c;
+            color: white;
+        }
+        #closeBtn:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+    <h2>📖 Server Guidebook</h2>
+    <p>Click below to open the guidebook in your browser.</p>
+    <div class="buttons">
+        <button id="openBtn">Open Guidebook</button>
+        <button id="closeBtn">Close</button>
+    </div>
+
+<script>
+    const GUIDE_URL = "YOURLINK";
+
+    // Listen for Escape to close
+    document.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") {
+            closeUI();
+        }
+    });
+
+    // Listen for messages from Lua
+    window.addEventListener('message', function(event) {
+        if (event.data.type === "open") {
+            document.body.classList.add("visible");
+        }
+        if (event.data.type === "close") {
+            document.body.classList.remove("visible");
+        }
+    });
+
+    // Open button → actually opens the browser
+    document.getElementById("openBtn").onclick = function() {
+        window.invokeNative('openUrl', GUIDE_URL);
+        // Optional: give visual feedback
+        this.innerText = "Opened in Browser!";
+        this.style.background = "#27ae60";
+        // Auto-close after ~1.5s or let user close manually
+        setTimeout(closeUI, 1800);
+    };
+
+    // Close button
+    document.getElementById("closeBtn").onclick = function() {
+        closeUI();
+    };
+
+    function closeUI() {
+        document.body.classList.remove("visible");
+        fetch(`https://${GetParentResourceName()}/close`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+    }
+</script>
+</body>
+</html>
